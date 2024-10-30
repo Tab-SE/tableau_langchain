@@ -1,6 +1,11 @@
+import logging
+
 from langchain.chains import TransformChain
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
+
+# Set up the logger for this module
+logger = logging.getLogger(__name__)
 
 def vds_query():
     # sets up parser to respond with reliable outputs
@@ -29,10 +34,10 @@ def create_response(parameters: dict) -> dict:
     split_string = parameters['pandas_agent_output'].split('\n\n|', 1)
     # store behavioral data in natural language
     pandas_behavioral = split_string[0]
-    print('******* pandas_behavior *******\n', pandas_behavioral)
+    logger.info(f"******* pandas_behavior *******\n{str(pandas_behavioral)}")
     # add back the '|' character and extract the data
     pandas_data = '|' + split_string[1] if len(split_string) > 1 else ''
-    print('******* data *******\n', pandas_data)
+    logger.info(f"******* data *******\n{pandas_data}")
 
     response_template = {
         'analysis': {
@@ -48,10 +53,10 @@ async def create_response_async(parameters: dict) -> dict:
     split_string = parameters['pandas_agent_output'].split('\n\n|', 1)
     # store behavioral data in natural language
     pandas_behavioral = split_string[0]
-    print('******* pandas_behavior *******\n', pandas_behavioral)
+    logger.info(f"******* pandas_behavior *******\n{str(pandas_behavioral)}")
     # add back the '|' character and extract the data
     pandas_data = '|' + split_string[1] if len(split_string) > 1 else ''
-    print('******* data *******\n', pandas_data)
+    logger.info(f"******* data *******\n{pandas_data}")
 
     response_template = {
         'analysis': {

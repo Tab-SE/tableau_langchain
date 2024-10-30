@@ -2,6 +2,11 @@ import os, requests, json
 from modules.headless import query
 from modules.prompts import nlq_to_vds
 
+import logging
+
+# Set up the logger for this module
+logger = logging.getLogger(__name__)
+
 # request metadata of declared datasource (READ_METADATA)
 def read():
     url = os.getenv('READ_METADATA')
@@ -25,8 +30,8 @@ def read():
         data = response.json()['data']
         return data
     else:
-        print("Failed to fetch data from the API. Status code:", response.status_code)
-        print(response.text)
+        logger.info("Failed to fetch data from the API. Status code:", response.status_code)
+        logger.info(response.text)
 
 def get_values(column_name):
      column_values = {'columns': [{'columnName': column_name}]}
