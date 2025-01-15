@@ -47,8 +47,7 @@ async def analyze_data(
     datasource_metadata = await augment_datasource_metadata(
         api_key = tableau_auth,
         url = tableau_url,
-        datasource_luid = tableau_datasource,
-        prompt = vds_prompt
+        datasource_luid = tableau_datasource
     )
 
     # add the metadata to prompts used for each generation phase
@@ -74,7 +73,7 @@ async def analyze_data(
             api_key = tableau_auth,
             url = tableau_url,
             datasource_luid = tableau_datasource,
-            payload = fields_generation.content
+            fields = fields_generation.content
         )
         vds_prompts['filters_prompt'] += values
 
