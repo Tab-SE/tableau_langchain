@@ -745,22 +745,23 @@ vds_prompt = {
 }
 
 fields_instructions = f"""
-Task:
-- Your job is to write the main body of a request to Tableau’s VizQL Data Service (VDS) API
-  to answer user questions with data and analytics.
-- Query all useful or interesting fields, including those contextually related to the topics mentioned
-  by the user, even if additional transformations or calculations are needed.
+Tasks:
+- Your job is to write the main body of a request to Tableau’s VizQL Data Service (VDS) API to answer
+  user questions with data and analytics.
+- Query all useful or interesting fields even if additional transformations or calculations are needed.
 - Always perform aggregations according to user needs to avoid returning too many rows of data.
 - Include sorting as often as possible to highlight a field of interest in the query.
+- Identify a List of filters that are categorical or of "STRING" type that would be used to filter the data
+  at a later step
 
 Restrictions:
-- DO NOT HALLUCINATE FIELD NAMES.
-- Only use fields based on what is listed in the `metadata_model` key.
+- DO NOT HALLUCINATE FIELD NAMES
+- Only use fields based on what is listed in the Data Source Metadata
 
 The VDS query is a JSON object and to write it you must follow these steps:
 
-1. Find the necessary `fieldCaptions` to write the query by checking the `metadata_model` key
-   containing additional metadata describing available fields on the data source.
+1. Find the necessary `fieldCaptions` to write the query by checking the
+   Data Source Metadata
 
 2. Structure the overall payload or request body according to this spec:
    Query: \n{vds_schema.get('Query', None)}
@@ -777,8 +778,9 @@ The VDS query is a JSON object and to write it you must follow these steps:
    SortDirection: \n{vds_schema.get('SortDirection', None)}
 
 Few-shot Examples:
-1. "query": "Average discount, total sales and profits by region sorted by profit"
-   "JSON": {{
+1. {{
+    "query": "Average discount, total sales and profits by region sorted by profit",
+    "JSON": {{
        "fields": [
            {{"fieldCaption": "Region"}},
            {{"fieldCaption": "Discount", "function": "AVG", "maxDecimalPlaces": 2}},
@@ -786,37 +788,45 @@ Few-shot Examples:
            {{"fieldCaption": "Profit", "function": "SUM", "maxDecimalPlaces": 2,
              "sortPriority": 1, "sortDirection": "DESC"}}
        ]
-   }}
+    }},
+    "filter_fields": []
+}}
 
-2. "query": "Show me the average sales per customer by segment"
-   "JSON": {{
+2. {{
+    "query": "Show me the average sales per customer by segment for Florida",
+    "JSON": {{
        "fields": [
            {{"fieldCaption": "Segment"}},
            {{"fieldCaption": "Sales", "function": "AVG",
              "maxDecimalPlaces": 2, "columnAlias": "Average Sales per Customer"}}
        ]
-   }}
+    }},
+    "filter_fields": ["State"]
+}}
 
-3. "query": "Display the number of orders by ship mode"
-   "JSON": {{
+3. {{
+    "query": "Display the number of orders by ship mode for the home office category in London",
+    "JSON": {{
        "fields": [
            {{"fieldCaption": "Ship Mode"}},
            {{"fieldCaption": "Order ID",
              "function": "COUNT", "columnAlias": "Number of Orders"}}
        ]
-   }}
+    }},
+    "filter_fields": ["Category", "City"]
+}}
 
 Output:
-Your output must be in JSON and contain 2 keys:
+Your output must be in JSON and contain the following keys:
 {{
-    "queried_fields_reasoning":
-        "In 3 short sentences, describe your reasoning: why did you query these fields?
-         Why did you aggregate & sort the data this way? How does this satisfy the user query?",
-    "vds_payload":
-        "The vds_payload with fields, aggregations, and sorts you wrote to satisfy the user query."
+    \"query\": \"The original user query to be used in the next step\",
+    \"queried_fields_reasoning\": \"In 3 short sentences, describe your reasoning: why did you query these fields? Why did you aggregate & sort the data this way? How does this satisfy the user query?\",
+    \"vds_payload\": \"The vds_payload with fields, aggregations, and sorts you wrote to satisfy the user query\",
+    \"filter_fields\": \"List all relevant categorical or of "STRING" type fields that can be used as filters to answer the user query, the next step will generate these filters\"
 }}
-"""
 
+Data Source Metadata:
+"""
 
 filters_instructions = f"""
 Task:
@@ -831,7 +841,8 @@ Query: {vds_schema.get('Query', 'No query provided')}
 
 2. Deduce the necessary filter fields by checking the `data_model`, which only contains sample
 filter values. You will need to make an educated guess to write the particular filter fields
-needed by the user.
+needed by the user. The "categorical_filters" key contains filter values for STRING filters that
+may contain the exact values you need to correctly filter the data
 
 3. Select the right kind of filters to add to `vds_payload` to satisfy the needs of the user query,
 considering the problem the user wants to solve:
@@ -925,14 +936,14 @@ Few-shot Examples:
 }}
 
 Output:
-Your output must be in JSON and contain 3 keys:
+Your output must be in JSON and contain the following keys:
 {{
+    \"query\": \"The original user query to be used in the next step\",
     \"queried_fields_reasoning\": \"the verbatim contents of `queried_fields_reasoning` provided as an input key\",
     \"filtered_fields_reasoning\": \"in 3 short sentences, describe your reasoning: why did you filter these fields? why did you choose these types of filters?\",
     \"vds_payload\": \"the `vds_payload` provided as an input enhanced with the filters you wrote to satisfy the user query\"
 }}
 """
-
 
 calculations_instructions = f"""
 Task:
@@ -976,17 +987,18 @@ Few-shot Examples:
 Output:
 Your output must be in JSON and contain 4 keys:
 {{
-    "queried_fields_reasoning": "the verbatim contents of `queried_fields_reasoning` provided as an input key",
-    "filtered_fields_reasoning": "the verbatim contents of `filtered_fields_reasoning` provided as an input key",
-    "calculated_fields_reasoning": "In 3 short sentences, describe your reasoning: why did you write these calculations? How do they help the user answer the question or understand the problem?",
-    "vds_payload": "the `vds_payload` provided as an input enhanced with the calculations you wrote to satisfy the user query"
+    \"query\": \"The original user query to be used in the next step\",
+    \"queried_fields_reasoning\": \"the verbatim contents of `queried_fields_reasoning` provided as an input key\",
+    \"filtered_fields_reasoning\": \"the verbatim contents of `filtered_fields_reasoning` provided as an input key\",
+    \"calculated_fields_reasoning\": \"In 3 short sentences, describe your reasoning: why did you write these calculations? How do they help the user answer the question or understand the problem?\",
+    \"vds_payload\": \"the `vds_payload` provided as an input enhanced with the calculations you wrote to satisfy the user query\"
 }}
 """
-
 
 vds_prompts = {
     "fields_prompt": fields_instructions,
     "filters_prompt": filters_instructions,
     "calculations_prompt": calculations_instructions,
-    "metadata_model": None
+    "metadata_model": None,
+    "categorical_filters": None
 }
