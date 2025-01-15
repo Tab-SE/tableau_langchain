@@ -1,7 +1,7 @@
 import asyncio
 import json
 import re
-from typing import Dict, Any
+from typing import Dict, Any, List
 from pydantic import BaseModel, Field
 
 from community.langchain_community.utilities.tableau.utils import http_post
@@ -210,7 +210,7 @@ async def get_values(api_key: str, url: str, datasource_luid: str, caption: str)
     return sample_values
 
 # obtains datasource metadata to augment the tool prompt
-async def augment_datasource_metadata(api_key: str, url: str, datasource_luid: str, prompt: Dict[str, str]):
+async def augment_datasource_metadata(api_key: str, url: str, datasource_luid: str):
     """
     Enhances the provided prompt (expecting a key called "data_model") with metadata
     describing a Tableau data source such that an Agent can correctly write queries to meet
@@ -248,7 +248,27 @@ async def augment_datasource_metadata(api_key: str, url: str, datasource_luid: s
     for field, string_values in zip([field for field in datasource_metadata['data'] if field['dataType'] == 'STRING'], string_values_results):
         field['sampleValues'] = string_values
 
-    # add the datasource metadata of the connected datasource to the system prompt
-    prompt['data_model'] = datasource_metadata
+    metadata_string = '\nDatasource Metadata:\n' + json.dumps(datasource_metadata)
 
-    return json.dumps(prompt)
+    return metadata_string
+
+
+async def get_filter_values(api_key: str, url: str, datasource_luid: str, fields: List[str]):
+    filter_values = {}
+
+    for field in fields:
+        column_value = {'fields': [{'fieldCaption': field}]}
+        output = await query_vds(
+            api_key = api_key,
+            datasource_luid = datasource_luid,
+            url = url,
+            query = column_value
+        )
+        if output is None:
+            return None
+        field_values = [list(item.values())[0] for item in output['data']][:4]
+        filter_values[field] = field_values
+
+    filter_values_string = '\nCategorical Filter Values:\n' + json.dumps(filter_values)
+
+    return filter_values_string
