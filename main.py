@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from agents.cra.agent import cra_agent
 from agents.utils.agent_utils import stream_graph_updates, _visualize_graph
 
-from community.langchain_community.utilities.tableau.auth import jwt_connected_app
+from langchain_tableau.utilities.auth import jwt_connected_app
 
 
 async def main():

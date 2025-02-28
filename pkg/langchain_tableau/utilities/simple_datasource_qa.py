@@ -5,9 +5,9 @@ import logging
 from typing import Dict, Optional
 from dotenv import load_dotenv
 
-from community.langchain_community.utilities.tableau.vizql_data_service import query_vds, query_vds_metadata
-from community.langchain_community.utilities.tableau.utils import json_to_markdown_table
-from community.langchain_community.utilities.tableau.metadata import get_data_dictionary
+from langchain_tableau.utilities.vizql_data_service import query_vds, query_vds_metadata
+from langchain_tableau.utilities.utils import json_to_markdown_table
+from langchain_tableau.utilities.metadata import get_data_dictionary
 
 
 def get_headlessbi_data(payload: str, url: str, api_key: str, datasource_luid: str):

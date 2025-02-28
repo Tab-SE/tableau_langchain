@@ -4,7 +4,7 @@ import re
 from typing import Dict, Any
 from pydantic import BaseModel, Field
 
-from community.langchain_community.utilities.tableau.utils import http_post
+from langchain_tableau.utilities.utils import http_post
 
 class AnalyzeDataInputs(BaseModel):
     """Describes model inputs for usage of the analyze_data tool"""

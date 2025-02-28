@@ -1,6 +1,6 @@
 [project]
 name = "langchain_tableau"
-version = "0.4.15"
+version = "0.4.35"
 description = "Tableau tools for Agentic use cases with Langchain"
 authors = [
     { name = "Stephen Price" },
@@ -28,8 +28,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/tableau/langchain_tableau"
-"Bug Tracker" = "https://github.com/tableau/langchain_tableau/issues"
+"Homepage" = "https://github.com/Tab-SE/tableau_langchain"
+"Bug Tracker" = "https://github.com/Tab-SE/tableau_langchain/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["langchain_tableau"]
@@ -37,7 +37,6 @@ packages = ["langchain_tableau"]
 [tool.hatch.build.targets.sdist]
 include = [
     "langchain_tableau",
-    "LICENSE",
     "README.md",
 ]
 

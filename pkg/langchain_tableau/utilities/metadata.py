@@ -1,7 +1,7 @@
 import json
 import requests
 from typing import Dict
-from community.langchain_community.utilities.tableau.utils import http_post
+from langchain_tableau.utilities.utils import http_post
 
 
 def get_datasource_query(luid):

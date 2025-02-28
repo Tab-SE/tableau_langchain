@@ -5,7 +5,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from community.langchain_community.utilities.tableau.utils import http_post
+from langchain_tableau.utilities.utils import http_post
 
 def jwt_connected_app(
         tableau_domain: str,
