@@ -25,6 +25,7 @@ dependencies = [
     "llama-index-vector-stores-pinecone==0.4.5",
     "pinecone-client[grpc]==6.0.0",
     "tavily-python==0.5.3",
+    "ipython==9.0.2",
 ]
 
 [build-system]
