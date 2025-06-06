@@ -10,34 +10,47 @@ from experimental.utilities.utils import json_to_markdown_table
 from experimental.utilities.metadata import get_data_dictionary
 
 
-def get_headlessbi_data(payload: str, url: str, api_key: str, datasource_luid: str):
-    json_payload = json.loads(payload)
+import json
+import logging
 
+def get_headlessbi_data(payload, url: str, api_key: str, datasource_luid: str):
+    # 1) Normalize payload to a dict
+    if isinstance(payload, str):
+        raw = payload.strip()
+        if raw.startswith("```"):
+            # drop the ```json and trailing ```
+            lines = raw.splitlines()
+            raw = "\n".join(lines[1:-1])
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError as je:
+            logging.error(f"JSON decoding error in get_headlessbi_data: {je}")
+            raise ValueError("Invalid JSON format in the payload")
+
+    # 2) Single call to query_vds
     try:
         headlessbi_data = query_vds(
             api_key=api_key,
             datasource_luid=datasource_luid,
             url=url,
-            query=json_payload
+            query=payload,    # always a dict now
         )
 
         if not headlessbi_data or 'data' not in headlessbi_data:
             raise ValueError("Invalid or empty response from query_vds")
 
+        # 3) Convert to markdown and return
         markdown_table = json_to_markdown_table(headlessbi_data['data'])
         return markdown_table
 
     except ValueError as ve:
-        logging.error(f"Value error in get_headlessbi_data: {str(ve)}")
+        logging.error(f"Value error in get_headlessbi_data: {ve}")
         raise
 
-    except json.JSONDecodeError as je:
-        logging.error(f"JSON decoding error in get_headlessbi_data: {str(je)}")
-        raise ValueError("Invalid JSON format in the payload")
-
     except Exception as e:
-        logging.error(f"Unexpected error in get_headlessbi_data: {str(e)}")
-        raise RuntimeError(f"An unexpected error occurred: {str(e)}")
+        logging.error(f"Unexpected error in get_headlessbi_data: {e}")
+        raise RuntimeError(f"An unexpected error occurred: {e}")
+
 
 
 def get_payload(output):

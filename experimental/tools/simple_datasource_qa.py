@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -196,6 +197,7 @@ def initialize_simple_datasource_qa(
         # 3. Query data from Tableau's VizQL Data Service using the AI written payload
         def get_data(vds_query):
             payload = vds_query.content
+
             try:
                 data = get_headlessbi_data(
                     api_key = tableau_auth,
