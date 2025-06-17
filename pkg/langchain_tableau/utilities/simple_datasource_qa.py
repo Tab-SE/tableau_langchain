@@ -113,11 +113,19 @@ def augment_datasource_metadata(
         datasource_luid=datasource_luid
     )
 
-    # insert data dictionary from Tableau's Data Catalog
-    prompt['data_dictionary'] = data_dictionary['datasource_fields']
+    # insert data dictionary from Tableau's Data Catalog (using new 'fields' key)
+    prompt['data_dictionary'] = data_dictionary['fields']
+
     # insert data source name, description and owner into 'meta' key
-    del data_dictionary['datasource_fields']
-    prompt['meta'] = data_dictionary
+    # (preserve the rich metadata structure without deleting fields)
+    prompt['meta'] = {
+        'datasource_name': data_dictionary['datasource_name'],
+        'datasource_description': data_dictionary['datasource_description'],
+        'datasource_owner': data_dictionary['datasource_owner'],
+        'datasource_luid': data_dictionary['datasource_luid'],
+        'field_count': data_dictionary['field_count'],
+        'field_names': data_dictionary['field_names']
+    }
 
     #  get sample values for fields from VDS metadata endpoint
     datasource_metadata = query_vds_metadata(
